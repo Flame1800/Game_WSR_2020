@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./assets/style/index.css">
+</head>
+
+<body>
+    <div class="App-game">
+        <section class="main-menu">
+            <div class="content">
+                <div class="title">Timon and Pumba</div>
+                <div class="sub-title">Инструкция</div>
+                <div class="text-instruction">A,D - ходьба <br> W - прыжок <br>(также вынырнуть из земли) <br> S - под
+                    землю</div>
+                <label for="name" class="name-label">Введите ваше имя</label>
+                <input type="text" class="input-name" placeholder="Имя">
+                <div class="button-start">Начать</div>
+            </div>
+        </section>
+
+        <section class="video">
+            <video autoplay src="./assets/video/Timon _ Pumbaa - Title Song [English Version].mp4"></video>
+            <div class="text">Нажмите пробел что бы пропустить</div>
+        </section>
+
+        <section class="game">
+            <audio src="#"></audio>
+            <div class="interface">
+                <div class="hp">HP: 100</div>
+                <div class="balls">Гусениц съедено: 0</div>
+                <div class="timer">00:00</div>
+            </div>
+            <div class="game-container">
+                <canvas class="game-canvas"></canvas>
+            </div>
+        </section>
+    </div>
+
+    <script src="./scripts/index.js" type="module"></script>
+</body>
+
+</html>
