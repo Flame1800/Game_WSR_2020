@@ -1,18 +1,19 @@
-import GameScreenController from './screenController.js';
+import GameController from './classes/GameController.js';
 
-const gameScreen = new GameScreenController;
+const gameController = new GameController;
+const startGameBtn = document.querySelector('.start-game');
+const video = document.querySelector('.video');
 
-const startGameButton = document.querySelector('.button-start');
-const game = document.querySelector('.game');
+gameController.onScreen('game');
 
-startGameButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    gameScreen.videoStart();
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space') {
-            gameScreen.gameStart();
-        }
-    });
-});
+// startGameBtn.addEventListener('click', (e) => {
+//     e.preventDefault();
+//     gameController.onScreen('video');
 
-gameScreen.gameStart();
+//     document.addEventListener('keydown', (e) => {
+//         if (e.code === 'Space') {
+//             gameController.onScreen('game');
+//         }
+//     })
+// })
+
