@@ -78,11 +78,10 @@
 .menu__content .start-game {
     padding: 14px 40px;
     font-size: 35px;
-    background: rgb(179 76 76)0;
+    background: rgb(187, 99, 99);
     margin-top: 20px;
     color: whitesmoke;
     border-radius: 10px;
-    cursor: pointer;
 }
 
 .video {
@@ -122,7 +121,7 @@
 
 .game .game-container {
     margin: 0 auto;
-    overflow: auto;
+    overflow: hidden;
     max-width: 90vw;
     height: 750px;
     margin-top: 10px;

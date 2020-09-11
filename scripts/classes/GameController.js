@@ -31,14 +31,14 @@ export default class GameController {
         }
     } 
 
-    onScreen = (mode) => {
+    onScreen = (mode, name = '') => {
         this.stateScreen.gameBlock = false;
         this.stateScreen.videoBlock = false;
         this.stateScreen.menuBlock = false;
 
         switch (mode) {
             case 'game':
-                const game = new Game();
+                const game = new Game(name);
                 game.start();
                 this.stateScreen.gameBlock = true;
                 break;
