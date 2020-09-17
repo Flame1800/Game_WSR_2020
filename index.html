@@ -17,9 +17,23 @@
                     <div class="title">Инструкция</div>
                     <div class="cont">
                         A, D - ходить <br>
-                        W - прыгать, <br>
+                        W - прыгать/вылезти, <br>
                         S - спрятаться, <br>
-                        Space - Пауза <br>
+                        Esc - Пауза <br>
+                    </div>
+                </div>
+                <div class="select-character">
+                    <div class="title">Выбор персонажа</div>
+                    <div class="cards">
+                        <div class="card">
+                            <div class="timon-img"></div>
+                            Тимон
+                        </div>
+                        
+                        <div class="card">
+                            <div class="pumba-img"></div>
+                            Пумба
+                        </div>
                     </div>
                 </div>
                 <label for="name" class="enter-name">Введите ваше имя</label>
@@ -33,12 +47,28 @@
         </div>
         <div class="game">
             <audio src=""></audio>
+            <div class="pause">
+                PAUSE
+            </div>
+            <div class="game-end">
+                <div class="title">Game Win</div>
+                <div class="table-users">
+                    <div class="item">
+                        <div class="name">Ruslan</div>
+                        <div class="bonus">0</div>
+                    </div>
+                </div>
+                <div class="btn-comeback">
+                    Начать сначала
+                </div>
+            </div>
             <div class="interface">
                 <div class="hp">HP: 100</div>
                 <div class="bonuses">Bonuses: 0</div>
                 <div class="time">00:00</div>
                 <div class="name-player"></div>
             </div>
+ 
             <div class="game-container">
                 <canvas id="canvas"></canvas>
             </div>

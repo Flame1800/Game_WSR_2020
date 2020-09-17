@@ -4,7 +4,7 @@ const gameController = new GameController;
 const startGameBtn = document.querySelector('.start-game');
 const nameInput = document.querySelector('.name');
 
-// gameController.onScreen('game');
+gameController.onScreen('game');
 
 nameInput.addEventListener('input', (e) => {
 
@@ -24,9 +24,11 @@ startGameBtn.addEventListener('click', (e) => {
     e.preventDefault();
     if (nameInput.value.length > 0) {
         gameController.onScreen('video');
+        let onceClick = true;
 
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
+            if (e.code === 'Space' && onceClick) {
+                onceClick = false;
                 gameController.onScreen('game', nameInput.value);
             }
         })

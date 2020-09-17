@@ -1,17 +1,22 @@
+import GameController from './GameController.js';
+
 export default class Game {
     constructor(name) {
         this.state = {
+            gameMode: 'process',
             pause: false,
             time: {
                 min: `00`,
                 sec: `00`,
-            }
+            },
         };
         this.interface = {
             hp: document.querySelector('.hp'),
                 bonuses: document.querySelector('.bonuses'),
                 timer: document.querySelector('.time'),
-                name: document.querySelector('.name-player')
+                name: document.querySelector('.name-player'),
+                pause: document.querySelector('.pause'),
+                gameEnd: document.querySelector('.game-end'),
         };
         this.bg = new Image();
         this.bg.src = '../../assets/img/bg.png';
@@ -25,16 +30,16 @@ export default class Game {
             y: 200,
             width: 90,
             height: 80,
-            xVelosity: 1.8,
-            yVelosity: 1.8,
+            xVelosity: 1.4,
+            yVelosity: 1.4,
             prevX: 0,
             prevY: 0,
             jump: false,
             down: false,
             collide: false,
-            img: new Image()
+            img: new Image(),
+            immortal: false
         }
-
         this.keys = {
             up: false,
             down: false,
@@ -80,12 +85,14 @@ export default class Game {
                 width: 100,
             },
         ];
+        this.enemies = [];
         this.bonuces = [];
-
         this.imgWall = new Image();
         this.imgWall.src = '../../assets/img/land.png';
         this.imgBonus = new Image();
         this.imgBonus.src = '../../assets/img/caterpillar.png';
+        this.imgEnemy = new Image();
+        this.imgEnemy.src = '../../assets/img/hyena.png';
         this.canvas = document.getElementById('canvas');
         this.ctx = this.canvas.getContext('2d');
         this.CANVAS_WIDTH = 4600;
@@ -121,6 +128,92 @@ export default class Game {
         }
 
         this.bonuces.push(bonus);
+
+        if (this.bonuces.length === 2) {
+            const firstItem = this.bonuces[0];
+            const secondItem = this.bonuces[1];
+
+            if (firstItem.x === secondItem.x) {
+                const newItems = this.bonuces.filter(item => item !== secondItem);
+                this.bonuces = newItems;
+            }
+        }
+    }
+
+    generateEnemy = () => {
+        const randomXpos = this.getRandomNum(this.player.x + 300, document.body.clientWidth);
+        const randomYpos = this.getRandomNum(0, document.body.clientHeight);
+        const enemy = {
+            x: randomXpos,
+            y: randomYpos,
+            spawnPoint: randomXpos,
+            width: 60,
+            height: 60,
+            xVelosity: 1.4,
+            yVelosity: 1.4,
+            prevX: 0,
+            prevY: 0,
+            damage: 30,
+            direction: 'left',
+        }
+
+        this.enemies.push(enemy);
+
+        if (this.enemies.length === 3) {
+            const firstItem = this.enemies[0];
+            const secondItem = this.enemies[1];
+            const thirdItem = this.enemies[2];
+
+            if (firstItem.x === secondItem.x || firstItem.x === thirdItem.x || secondItem.x === thirdItem.x) {
+                const newItems = this.enemies.filter(item => item !== secondItem);
+                this.enemies = newItems;
+            }
+        }
+    }
+
+    controllEnemyMoves = (obj) => {
+        obj.prevX = obj.x;
+        obj.prevY = obj.y;
+
+        obj.yVelosity += 4;
+
+        obj.xVelosity *= 0.9;
+        obj.yVelosity *= 0.9;
+        obj.x += obj.xVelosity;
+        obj.y += obj.yVelosity;
+
+        if (obj.y + obj.height >= this.CANVAS_HEIGHT) {
+            if (this.player.down) {
+                obj.y = this.CANVAS_HEIGHT + obj.height - 120;
+            } else {
+                obj.y = this.CANVAS_HEIGHT - obj.height;
+                obj.jump = false;
+            }
+        }
+
+        if (obj.x < 0) {
+            obj.x = 0;
+        }
+
+        if (obj.direction === 'left') {
+            if (obj.x < obj.spawnPoint + 250) {
+                obj.xVelosity += 0.3;
+            } else {
+                obj.direction = 'right';
+            }
+        }
+
+        if (obj.direction === 'right') {
+            if (obj.x > obj.spawnPoint - 250) {
+                obj.xVelosity -= 0.3;
+            } else {
+                obj.direction = 'left';
+            }
+        }
+
+        if (obj.x + obj.width > this.CANVAS_WIDTH) {
+            obj.x = this.CANVAS_WIDTH - obj.width;
+        }
     }
 
     collideHanlder = (obj, obst) => {
@@ -134,16 +227,26 @@ export default class Game {
         }
     }
 
+    controllEnemyPunch = () => {
+        if (!this.player.immortal) {
+            this.player.hp -= 30;
+            this.player.immortal = true;
+        }
+    }
+
     controllCollide = (obj, obst, mode = 'default') => {
         if (mode === 'bonus') {
             if (this.collideHanlder(obj, obst)) {
                 this.player.hp += 5;
-                this.player.bonuces += 1;   
+                this.player.bonuces += 1;
                 const newBonuces = this.bonuces.filter(bonus => obst !== bonus);
                 this.bonuces = newBonuces;
             }
         } else {
             if (this.collideHanlder(obj, obst)) {
+                if (mode === 'enemy') {
+                    this.controllEnemyPunch();
+                }
                 this.gameContainer.scrollBy(0, 0);
 
                 if (obj.prevX + obj.width <= obst.x) {
@@ -170,19 +273,18 @@ export default class Game {
     controllView = () => {
         const clientWidth = document.body.clientWidth;
         if (this.player.x >= clientWidth / 2 &&
-            this.player.xVelosity != 0) {
+            (this.player.xVelosity > 2 || this.player.xVelosity < -2)) {
             if (this.keys.right) {
-                this.gameContainer.scrollBy(this.player.xVelosity, 0);
+                this.gameContainer.scrollBy(13, 0);
             }
             if (this.keys.left) {
-                this.gameContainer.scrollBy(this.player.xVelosity, 0);
+                this.gameContainer.scrollBy(-12, 0);
             }
         }
     }
 
     controllKeys = (e) => {
         const keyListener = e.type === 'keydown' ? true : false;
-
         switch (e.code) {
             case "KeyW":
                 this.keys.up = keyListener;
@@ -196,6 +298,8 @@ export default class Game {
             case "KeyD":
                 this.keys.right = keyListener;
                 break;
+            case "Escape":
+                this.keys.esc = keyListener;
         }
     }
 
@@ -278,6 +382,16 @@ export default class Game {
             }
 
         }, 60);
+        setInterval(() => {
+            if (this.player.immortal) {
+                this.player.immortal = false;
+            }
+        }, 1000);
+        setInterval(() => {
+            if (this.keys.esc) {
+                this.state.pause = !this.state.pause;
+            }
+        }, 200);
     }
 
     playerMoves = () => {
@@ -287,35 +401,58 @@ export default class Game {
         if (this.player.hp >= 100) {
             this.player.hp = 100;
         }
+
+        if (this.player.x >= this.CANVAS_WIDTH - 400) {
+            this.state.gameMode = 'Game Win';
+        }
+
+        if (this.player.hp <= 0) {
+            this.player.hp = 0;
+            this.state.gameMode = 'Game Over';
+        }
     }
 
     render = () => {
         this.interfaceHandler();
-        setTimeout(() => {
-            if (this.bonuces.length < 2) {
-                this.generateBonus();
+        if (this.state.gameMode === 'process' || !this.state.pause) {
+            setTimeout(() => {
+                if (this.bonuces.length < 2) {
+                    this.generateBonus();
+                }
+            }, 2000);
+
+            if (this.enemies.length < 3) {
+                this.generateEnemy();
             }
-        }, 2000);
 
-        this.ctx.clearRect(0, 0, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
-        let fon = this.ctx.createPattern(this.bg, 'repeat');
-        this.ctx.fillRect(0, 0, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
-        this.ctx.fillStyle = fon;
+            this.ctx.clearRect(0, 0, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
+            let fon = this.ctx.createPattern(this.bg, 'repeat');
+            this.ctx.fillRect(0, 0, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
+            this.ctx.fillStyle = fon;
 
-        this.walls.forEach(wall => {
-            this.drawObject(wall, this.imgWall);
-            this.controllCollide(this.player, wall);
-        });
-        this.bonuces.forEach(bonus => {
-            this.drawObject(bonus, this.imgBonus);
-            this.controllCollide(this.player, bonus, 'bonus');
-        })
+            this.walls.forEach(wall => {
+                this.drawObject(wall, this.imgWall);
+                this.controllCollide(this.player, wall);
+                this.enemies.forEach(enemy =>  this.controllCollide(enemy, wall));
+            });
+            this.bonuces.forEach(bonus => {
+                this.drawObject(bonus, this.imgBonus);
+                this.controllCollide(this.player, bonus, 'bonus');
+            })
 
-        this.playerMoves();
-        this.controllView();
-        document.addEventListener('keydown', this.controllKeys);
-        document.addEventListener('keyup', this.controllKeys);
-        requestAnimationFrame(this.render);
+            this.enemies.forEach(enemy => {
+                this.drawObject(enemy, this.imgEnemy);
+                this.controllCollide(this.player, enemy, "enemy");
+                this.controllEnemyMoves(enemy);
+            })
+
+            this.playerMoves();
+            this.controllView();
+            document.addEventListener('keydown', this.controllKeys);
+            document.addEventListener('keyup', this.controllKeys);
+
+            requestAnimationFrame(this.render);
+        }
     }
 
     interfaceHandler = () => {
@@ -323,6 +460,27 @@ export default class Game {
         this.interface.bonuses.innerHTML = `Гусениц сьедено: ${this.player.bonuces}`;
         this.interface.timer.innerHTML = `${this.state.time.min}:${this.state.time.sec}`;
         this.interface.name.innerHTML = this.player.name;
+        this.interface.pause.style.display = this.state.pause ? 'flex' : 'none';
+        this.interface.gameEnd.style.display = this.state.gameMode !== 'process' ? 'flex' : 'none';
+        this.generateScreenEndGame();
+    }
+
+    generateScreenEndGame = () => {
+        if (this.state.gameMode !== 'process') {
+            const title = this.interface.gameEnd.querySelector('.title');
+            const name = this.interface.gameEnd.querySelector('.name');
+            const bonus = this.interface.gameEnd.querySelector('.bonus');
+            const btnGamePlay = this.interface.gameEnd.querySelector('.btn-comeback');
+
+            title.innerHTML = this.state.gameMode;
+            name.innerHTML = this.player.name;
+            bonus.innerHTML = 1000 - (this.state.time.min * 60 + this.state.time.sec) + this.player.bonuces * 10;
+            btnGamePlay.addEventListener('click', () => {
+                const gameController = new GameController;
+                gameController.onScreen('game', this.player.name);
+            });
+
+        }
     }
 
     timer = (min = 0, sec = 0) => {
